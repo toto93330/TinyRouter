@@ -10,6 +10,7 @@ ROUTEUR POUR APPRENDRE A MES ETUDIENTS OPENCLASSROOMS (VERSION V.1) PARCOURS PHP
 
 class Router
 {
+
     public $routes = [];
 
     public $routename;
@@ -57,8 +58,12 @@ class Router
      */
     function verifRoute()
     {
+
         //J'explode mon uri courant pour recuperer ces parametres 
         $uri = explode('/', $_SERVER['REQUEST_URI']);
+
+        // dump($this->routes);
+        // die();
 
         foreach ($this->routes as $value) {
 
@@ -69,7 +74,6 @@ class Router
             // Je verifie si ma route pointe sur l'index et je la defini grace à son nom
             /////////////
             if ($uri[1] == "") {
-
                 foreach ($this->routes as $value) {
                     if ($value['uri'] === '/') {
                         $this->routename = $value['name'];
@@ -81,65 +85,82 @@ class Router
                 ///////
                 // Je passe a là suite de mon traitement si je ne suis pas dans l'index
                 ///////
-            } elseif (($uri[1] === $route[1] && count($uri) === count($route)) || $uri[1] === "") {
 
-                //////////
-                // Je verifie si le type de la methode est bonne sinon je defini ma route sur null
-                //////////
-                if (strtolower($value['method']) != strtolower($_SERVER['REQUEST_METHOD'])) {
-                    $this->routename = null;
-                    return false;
-                } else {
+            } elseif (($uri[1] === $route[1] && count($uri) === count($route)) && strtolower($value['method']) === strtolower($_SERVER['REQUEST_METHOD']) || $uri[1] === "") {
+
+
+                //////
+                // VERIF ROUTE EXIST
+                //////  
+                //var_dump(array_search('contact', $uri)); 
+                $array = [];
+                foreach ($this->routes as $route) {
+                    $array[] = explode('/', $route['uri'])[1];
+                }
+
+                if (array_search($uri[1], $array)) {
 
                     //////////
-                    // Je recupere les parametre envoyer dans uri
+                    // Je verifie si le type de la methode est bonne sinon je defini ma route sur null
                     //////////
-                    preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $value['uri'], $match, PREG_SET_ORDER);
 
-                    /////////
-                    // Je recupere le nom des variables dans un tableau
-                    /////////
+                    if (strtolower($value['method']) != strtolower($_SERVER['REQUEST_METHOD'])) {
+                        $this->routename = null;
+                        return false;
+                    } else {
 
-                    $index = array();
+                        //////////
+                        // Je recupere les parametre envoyer dans uri
+                        //////////
+                        preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $value['uri'], $match, PREG_SET_ORDER);
 
+                        /////////
+                        // Je recupere le nom des variables dans un tableau
+                        /////////
 
-                    for ($i = 0; $i < count($match); $i++) {
-                        $index += [$i => $match[$i][3]];
-                    }
+                        $index = array();
 
-                    ////////////
-                    // Je defini ma route dans une variable
-                    ////////////
-
-                    $this->route = $value;
-
-                    foreach ($match as $value) {
-
-                        ////////
-                        // Je verifie son type grace a $matchTypes
-                        ////////
-
-                        preg_match_all($this->matchTypes[$value[2]], $_SERVER['REQUEST_URI'], $match, PREG_SET_ORDER);
-
-                        ////////
-                        //si il y a une erreur de parametre je defini ma route sur null
-                        ////////
-                        if ($match == null) {
-                            $this->routename = null;
-                            return false;
-                        } else {
-
-                            ////////
-                            // On récupére les parametres de uri et on les l'injects dans un tableau nouveau tableau
-                            ////////
-
-                            foreach ($index as $key => $param) {
-
-                                $this->params += [$index[$key] => $match[$key][0]];
-                            }
-                            return true;
+                        for ($i = 0; $i < count($match); $i++) {
+                            $index += [$i => $match[$i][3]];
                         }
+
+                        ////////////
+                        // Je defini ma route dans une variable
+                        ////////////
+
+                        $this->route = $value;
+
+
+                        foreach ($match as $value) {
+
+                            ////////
+                            // Je verifie son type grace a $matchTypes
+                            ////////
+
+                            preg_match_all($this->matchTypes[$value[2]], $_SERVER['REQUEST_URI'], $match, PREG_SET_ORDER);
+
+                            ////////
+                            //si il y a une erreur de parametre je defini ma route sur null
+                            ////////
+                            if ($match == null) {
+                                $this->routename = null;
+                                return false;
+                            }
+                        }
+
+                        ////////
+                        // On récupére les parametres de uri et on les l'injects dans un tableau nouveau tableau
+                        ////////
+
+                        foreach ($index as $key => $param) {
+                            $this->params[] = [$index[$key] => $match[$key + 1][0]];
+                        }
+                        // return true;
+
+                        return true;
                     }
+                } else {
+                    return false;
                 }
             }
         }
@@ -151,8 +172,6 @@ class Router
      */
     function render()
     {
-        $this->verifRoute();
-
         if ($this->verifRoute()) {
             call_user_func_array($this->route['controller'], $this->params);
         } else {
