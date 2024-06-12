@@ -4,7 +4,7 @@ namespace Anthony\Router;
 
 /*
 MIT License
-Copyright (c) 2021 Anthony Alves <contact@anthonyalves.fr>
+Copyright (c) 2024 Anthony Alves <contact@anthonyalves.fr>
 ROUTEUR POUR APPRENDRE A MES ETUDIENTS OPENCLASSROOMS (VERSION V.2) PARCOURS PHP SYMFONY
 */
 
