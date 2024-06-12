@@ -35,8 +35,8 @@ $route->addRoute('GET', '404', '/erreur-404', function () {
 
 //
 
-if ($route->verifRoute()) {
-    $route->render();
-} else {
-    echo 'cette route n\'existe pas';
+if ($route->verifRoute() === null || $route->verifRoute() === false) {
+    header('location: /404', 404);
 }
+
+$route->render();
