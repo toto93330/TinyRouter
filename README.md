@@ -16,7 +16,7 @@ $route->addRoute('GET', 'article', '/article/[i:date]/[i:slug]', function ($date
 
 ## Caractéristiques
 
-* Peut être utilisé avec toutes les méthodes HTTP
+* Peux utiliser toutes les méthodes HTTP
 * Routage dynamique avec des paramètres de route nommés
 * Routage flexible des expressions régulières
 * Regex personnalisé
