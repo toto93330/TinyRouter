@@ -123,12 +123,10 @@ class Router
                     $array = [];
                     if (isset($this->route['uri'])) {
                         $d = explode('/', $this->route['uri']);
-                        $count = 0;
                         for ($i = 0; $i < count($d); $i++) {
                             if (preg_match_all('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $d[$i], $match, PREG_SET_ORDER)) {
                                 $uri = explode('/', $_SERVER['QUERY_STRING']);
-                                $array += [$count => ['name' => $match[0][3], 'type' => $match[0][2], 'index' => $i, 'value' => $uri[$i - 1]]];
-                                $count++;
+                                $array[] = ['name' => $match[0][3], 'type' => $match[0][2], 'index' => $i, 'value' => $uri[$i - 1]];
                             }
                         }
                     }
