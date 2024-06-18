@@ -63,7 +63,7 @@ class Router
         //J'explode mon uri courant pour recuperer ces parametres 
         $uri = explode('/', $_SERVER['REQUEST_URI']);
 
-        foreach ($this->routes as $value) {
+        foreach ($this->routes as $key => $value) {
 
             // J'explode mes uri pour voir si l'une de mes routes match sans les parametre complementaire
             $route = explode('/', $value['uri']);
@@ -83,23 +83,36 @@ class Router
             }
 
             ///////
-            // Je passe a là suite de mon traitement si je ne suis pas dans l'index
+            // Je passe a là suite de mon traitement si je ne suis pas dans l'index principal (CORRECTIF 2024)
             ///////
+               
+            $validate = false;
+                foreach ($this->routes as $key => $value) {
+                   $u = explode('/', preg_replace('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', '', $key));
+                  
+                   for ($i=0; $i < count($u)+1; $i++) { 
+                        if((isset($uri[$i]) && isset($route[$i])) && ($uri[$i] === $route[$i])){
+                            // dump($uri[$i], $route[$i]);
+                            $validate = true;
+                        }else{
+                            $validate = false;    
+                        }
+                            
+                   }
 
-            if (($uri[1] === $route[1] && count($uri) === count($route)) && strtolower($value['method']) === strtolower($_SERVER['REQUEST_METHOD']) || $uri[1] === "") {
-
-                //////
-                // VERIF ROUTE EXIST
-                //////  
-
-                $array = [];
-                foreach ($this->routes as $route) {
-                    $array[] = explode('/', $route['uri'])[1];
+                   if($validate){
+                    break;
+                   }
                 }
 
-                if (array_search($uri[1], $array)) {
+            if ($validate && (count($uri) === count($route)) && strtolower($value['method']) === strtolower($_SERVER['REQUEST_METHOD'])) {
 
-
+                    ///////
+                    // Je valide ma route (CORRECTIF 2024)
+                    ///////
+                    $index = implode("/", $route);
+                    $value = $this->routes[$index];
+                    
                     //////////
                     // Je verifie si le type de la methode (GET, POST etc ...) est bonne sinon je defini ma route sur null
                     //////////
@@ -131,12 +144,13 @@ class Router
                         }
                     }
 
-
+                
                     ////////
                     // On verifie la validité des parametre de la route (CORRECTIF 2024)
                     ////////
 
                     foreach ($array as $result) {
+                        
                         if (!preg_match_all($this->matchTypes[$result['type']], $result['value'], $match, PREG_SET_ORDER)) {
                             return false;
                         }
@@ -150,10 +164,10 @@ class Router
                     }
 
                     return true;
-                } else {
-                    return false;
-                }
+            
             }
+
+
         }
     }
 
