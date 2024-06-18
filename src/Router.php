@@ -82,28 +82,20 @@ class Router
                 return true;
             }
 
-            ///////
+           ///////
             // Je passe a là suite de mon traitement si je ne suis pas dans l'index principal (CORRECTIF 2024)
             ///////
-               
-            $validate = false;
-                foreach ($this->routes as $key => $value) {
+           
+                   $validate = false;
                    $u = explode('/', preg_replace('`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', '', $key));
                   
-                   for ($i=0; $i < count($u)+1; $i++) { 
+                   for ($i=1; $i < count($u); $i++) { 
                         if((isset($uri[$i]) && isset($route[$i])) && ($uri[$i] === $route[$i])){
-                            // dump($uri[$i], $route[$i]);
                             $validate = true;
                         }else{
-                            $validate = false;    
-                        }
-                            
+                            $validate = false;
+                        }                   
                    }
-
-                   if($validate){
-                    break;
-                   }
-                }
 
             if ($validate && (count($uri) === count($route)) && strtolower($value['method']) === strtolower($_SERVER['REQUEST_METHOD'])) {
 
